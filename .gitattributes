@@ -2,6 +2,6 @@
 *.blend lfs
 *.png lfs
 *.obj lfs
-*.mat lfs
+*.mtl lfs
 *.fbx lfs
 *.gif lfs
