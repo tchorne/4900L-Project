@@ -1,3 +1,4 @@
+[attr]lfs               filter=lfs diff=lfs merge=lfs -text
 *.blend lfs
 *.png lfs
 *.obj lfs
