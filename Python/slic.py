@@ -87,8 +87,8 @@ class SLICImage:
             ys, xs = np.where(labels == k)
             cx, cy = int(xs.mean()), int(ys.mean())
             center_color = self.pixels[cx,cy]
-            print(k, cx, cy)
-            print(center_color) 
+            #print(k, cx, cy)
+            #print(center_color) 
             mask = (labels == k).astype(np.uint8) * 255
             mask_image = Image.fromarray(mask, mode='L')
             colored_overlay = Image.new('RGBA', self.image.size, center_color)

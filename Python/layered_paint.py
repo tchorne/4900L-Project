@@ -12,11 +12,13 @@ BLUR_FACTOR = 0.5
 
 class LayeredPaintImage:
     image: Image.Image
+    secondary: Image.Image
     draw: ImageDraw.ImageDraw
     brush_sizes: List[int]
 
-    def __init__(self, image: Image.Image):
+    def __init__(self, image: Image.Image, secondary: Image.Image = None):
         self.image = image
+        self.secondary = secondary
         self.pixels = image.load()
         self.num_pixels = image.size[0] * image.size[1]
         self.brush = Brush(Image.open("Brushes/paint1.png"))
@@ -24,6 +26,10 @@ class LayeredPaintImage:
     def paint(self):
         canvas = Image.new("RGBA", self.image.size, (255, 255, 255, 255))
         draw = ImageDraw.Draw(canvas)
+        secondary_canvas = None
+        if self.secondary:
+            secondary_canvas = Image.new("RGBA", self.image.size, (255, 255, 255, 255))
+            secondary_draw = ImageDraw.Draw(secondary_canvas)
         w, h = self.image.size 
         threshold = 4000
         
@@ -60,10 +66,14 @@ class LayeredPaintImage:
                         draw_box = (x + x1 - brush_size // 2, y + y1 - brush_size // 2, x + x1 + brush_size // 2, y + y1 + brush_size // 2)
 
                         draw_color = tuple(M.mean(axis=(0, 1)).astype(int))
-                        #draw.ellipse(draw_box, fill=draw_color, outline=draw_color)
+                        secondary_draw_color = None
+                        if self.secondary:
+                            secondary_M = np.array(self.secondary.crop((x, y, x + grid, y + grid)))
+                            secondary_draw_color = tuple(secondary_M.mean(axis=(0, 1)).astype(int))
+                            secondary_canvas.paste(secondary_draw_color, box=draw_box, mask=brush_mask)
                         canvas.paste(draw_color, box=draw_box, mask=brush_mask)
             refresh = False
-        return canvas
+        return canvas, secondary_canvas
 
         
     def set_brush_sizes(self, *args):
