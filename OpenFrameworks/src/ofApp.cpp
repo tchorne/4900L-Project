@@ -22,7 +22,7 @@ void ofApp::setup(){
 	chairModel.loadModel("chair.obj");
 
 	//setting up the lighting position 
-	lightPos = glm::vec3(-500, 3000 + mouseX * 3, 1000);
+	lightPos = glm::vec3(-500, 3000, 1000);
 
 	//setting up the camera
 	cam.setDistance(2000);
@@ -50,7 +50,23 @@ void ofApp::setup(){
 	cylLighting.setResolution(10, 16, 2);
 	cylLighting.setHeight(200);
 
-	
+	//earth texture
+	ofDisableArbTex();
+	//ofLoadImage(earth, "1_earth_8k.jpg");
+	bool ok = ofLoadImage(earth, "1_earth_8k.jpg");
+
+	if (!ok) {
+		ofLogError() << "Failed to load earth texture!";
+	}
+	else {
+		ofLogNotice() << "Loaded earth texture: "
+			<< earth.getWidth() << "x" << earth.getHeight();
+	}
+
+	//sphereEarth.mapTexCoordsFromTexture(earth);
+
+	sphereEarth.setPosition(0, 0, 0);
+	sphereEarth.set(2000, 16);
 }
 
 //--------------------------------------------------------------
@@ -83,19 +99,32 @@ void ofApp::draw(){
 	cylLighting.draw();
 
 	//if current model is kitchen
-	if (currentModel == 0) {
+	if (currentModel == 1) {
 		lightingShader.setUniformMatrix4f("worldMatrix", kitchenModel.getModelMatrix());
+		lightingShader.setUniform1i("useAlbedo", false);
 		//custom lighting only works if materials are disabled
 		kitchenModel.disableMaterials();
 		kitchenModel.drawFaces();
 
 	}
 	//else if current model is chair
-	else {
+	else if (currentModel ==2){
 		lightingShader.setUniformMatrix4f("worldMatrix", chairModel.getModelMatrix());
 		//custom lighting only works if materials are disabled
 		chairModel.disableMaterials();
 		chairModel.drawFaces();
+	}
+	else {
+		
+		lightingShader.setUniformMatrix4f("worldMatrix", sphereEarth.getGlobalTransformMatrix());
+
+		//earth.bind();
+		sphereEarth.rotate(0.1, 0, 1, 0);
+
+		lightingShader.setUniform1i("useAlbedo", true);
+		lightingShader.setUniformTexture("albedoTex", earth, 0);
+		sphereEarth.draw();
+		//earth.unbind();
 	}
 
 	lightingShader.end();
@@ -112,11 +141,14 @@ void ofApp::draw(){
 void ofApp::keyPressed(int key){
 	//for kitchen model
 	if (key == '1') {
-		currentModel = 0;
+		currentModel = 1;
 	}
 	//for chair model
 	else if (key == '2') {
-		currentModel = 1;
+		currentModel = 2;
+	}
+	else if (key == '3') {
+		currentModel = 3;
 	}
 }
 

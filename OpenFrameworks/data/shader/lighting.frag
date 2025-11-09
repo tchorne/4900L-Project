@@ -3,6 +3,11 @@ OF_GLSL_SHADER_HEADER
 in vec3 FragPos;
 in vec3 Normal;
 
+uniform bool useAlbedo;  
+uniform sampler2D albedoTex;
+in vec2 vUv;
+
+
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 uniform vec3 lightColor;
@@ -32,8 +37,13 @@ void main()
     float specular = specularStrength * spec;
 	//specular = 0;
 
-    vec3 result = (ambient + diffuse + specular) * objectColor;
-    fragColor = vec4(result.rgb, 1.0);
+   // vec3 result = (ambient + diffuse + specular) * objectColor;
+  //  fragColor = vec4(result.rgb, 1.0);
+
+    vec3 albedo = useAlbedo ? texture(albedoTex, vUv).rgb : vec3(1.0);
+    vec3 result = (ambient +diffuse +specular) * (objectColor * albedo);
+    fragColor = vec4(result.rgb,1.0);
+
   //  fragColor.rgb = vec3(N.x*0.5+0.5, 0.3, N.z*0.5+0.5);
 
    // fragColor = vec4(0.7,0.3,0.1,1.0); // test with constant color

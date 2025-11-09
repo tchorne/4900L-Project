@@ -41,4 +41,7 @@ class ofApp : public ofBaseApp{
 		//light position for shader
 		glm::vec3 lightPos;
 
+		//earth demo
+		ofTexture earth;
+		ofSpherePrimitive sphereEarth;
 };
