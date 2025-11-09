@@ -22,18 +22,23 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 
-		ofLight light;
+		//ofLight light;
 
 		ofxAssimpModelLoader kitchenModel;
 		ofxAssimpModelLoader chairModel;
 
-
-		ofCylinderPrimitive orreryBase;
-
 		ofEasyCam cam;
 
+		//keep track of current model
 		int currentModel = 0;
 
-		float chairAngle = 0.0f;
+
+		ofShader lightingShader;
+
+		//temp cylinder for lighting testing
+		ofCylinderPrimitive cylLighting;
+
+		//light position for shader
+		glm::vec3 lightPos;
 
 };
