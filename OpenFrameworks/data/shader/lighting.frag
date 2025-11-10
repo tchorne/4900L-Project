@@ -4,8 +4,10 @@ in vec3 FragPos;
 in vec3 Normal;
 
 uniform bool useAlbedo;  
-uniform sampler2D albedoTex;
+uniform sampler2D texA;
+uniform sampler2D texB;
 in vec2 vUv;
+uniform float split;
 
 
 uniform vec3 lightPos;
@@ -40,7 +42,20 @@ void main()
    // vec3 result = (ambient + diffuse + specular) * objectColor;
   //  fragColor = vec4(result.rgb, 1.0);
 
-    vec3 albedo = useAlbedo ? texture(albedoTex, vUv).rgb : vec3(1.0);
+  
+
+
+    //vec3 albedo = useAlbedo ? texture(texB, vUv).rgb : vec3(1.0);
+
+    vec3 albedo = vec3(1.0);
+
+    if(useAlbedo){
+        float side = step(split, vUv.x);
+        vec3 a = texture(texA,vUv).rgb;
+        vec3 b = texture(texB,vUv).rgb;
+        albedo = mix(a,b,side);
+    }
+
     vec3 result = (ambient +diffuse +specular) * (objectColor * albedo);
     fragColor = vec4(result.rgb,1.0);
 

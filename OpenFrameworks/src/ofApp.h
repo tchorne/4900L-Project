@@ -43,5 +43,6 @@ class ofApp : public ofBaseApp{
 
 		//earth demo
 		ofTexture earth;
+		ofTexture earthNight;
 		ofSpherePrimitive sphereEarth;
 };

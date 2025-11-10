@@ -55,6 +55,8 @@ void ofApp::setup(){
 	//ofLoadImage(earth, "1_earth_8k.jpg");
 	bool ok = ofLoadImage(earth, "1_earth_8k.jpg");
 
+
+
 	if (!ok) {
 		ofLogError() << "Failed to load earth texture!";
 	}
@@ -64,6 +66,8 @@ void ofApp::setup(){
 	}
 
 	//sphereEarth.mapTexCoordsFromTexture(earth);
+	ofLoadImage(earthNight, "earthlights1k.jpg");
+
 
 	sphereEarth.setPosition(0, 0, 0);
 	sphereEarth.set(2000, 16);
@@ -110,6 +114,7 @@ void ofApp::draw(){
 	//else if current model is chair
 	else if (currentModel ==2){
 		lightingShader.setUniformMatrix4f("worldMatrix", chairModel.getModelMatrix());
+		lightingShader.setUniform1i("useAlbedo", false);
 		//custom lighting only works if materials are disabled
 		chairModel.disableMaterials();
 		chairModel.drawFaces();
@@ -121,8 +126,13 @@ void ofApp::draw(){
 		//earth.bind();
 		sphereEarth.rotate(0.1, 0, 1, 0);
 
+		//take mouse X position and split between two textures
+		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
+		lightingShader.setUniform1f("split", split);
+
 		lightingShader.setUniform1i("useAlbedo", true);
-		lightingShader.setUniformTexture("albedoTex", earth, 0);
+		lightingShader.setUniformTexture("texA", earth, 0);
+		lightingShader.setUniformTexture("texB", earthNight, 1);
 		sphereEarth.draw();
 		//earth.unbind();
 	}
