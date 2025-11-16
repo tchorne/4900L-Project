@@ -8,6 +8,7 @@ uniform sampler2D texA;
 uniform sampler2D texB;
 in vec2 vUv;
 uniform float split;
+uniform vec2 screenSize;
 
 
 uniform vec3 lightPos;
@@ -50,7 +51,12 @@ void main()
     vec3 albedo = vec3(1.0);
 
     if(useAlbedo){
-        float side = step(split, vUv.x);
+        //0 to 1 representation of pixels x-coordinate on the screen - 0 all the way left and 1 all the way right
+        float screenX = gl_FragCoord.x / screenSize.x;
+        
+        //check which side the pixel is on and which texture to use
+        float side = step(split, screenX);
+        
         vec3 a = texture(texA,vUv).rgb;
         vec3 b = texture(texB,vUv).rgb;
         albedo = mix(a,b,side);
