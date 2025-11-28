@@ -5,41 +5,91 @@ from layered_paint import LayeredPaintImage
 from kuwahara import Kuwahara
 from flow_direction import FlowDirection
 
-filename = "Inputs/earth_normals_small.png"
-secondary = "Inputs/earth_albedo_small.png"
-outputname = "Outputs/earth_normals.png"
-secondary_outputname = "Outputs/earth_albedo.png"
-tertiary_outputname = "Outputs/earth_flow.png"
-normals_image = None
+# Earth
+# Dragon
+# Spot
+# Bunny
 
-with Image.open(filename) as img:
-    img.load()
-    img_2 = Image.open(secondary)
-    draw = ImageDraw.Draw(img)
+albedo_images = [
+    "earth_albedo.png",
+    "dragon_albedo.png",
+    "spot_albedo.png",
+    "bunny_albedo.png",
+]
 
-    # slic_image = SLICImage(img, draw)
-    # slic_2 = SLICImage(img_2, ImageDraw.Draw(img_2))
-    # labels, centers = slic_2.slic(superpixel_ratio=36, num_iterations=10, compactness=13)
-    # slic_image.draw_splots(labels)
-    # slic_2.draw_splots(labels)
+normal_images = [
+    "earth_normals.png",
+    "dragon_normals.png",
+    "spot_normals.png",
+    "bunny_normals.png",
+]
+
+def quick_slic(image: str, secondary_image: str):
+    image_input = Image.open("Inputs/" + image)
+    image_output = "Outputs/" + image
+
+    slic_image = SLICImage(image_input, ImageDraw.Draw(image_input))
+    labels, centers = slic_image.slic(superpixel_ratio=36, num_iterations=10, compactness=13)
+    slic_image.draw_splots(labels)
+    slic_image.image.save(image_output)
+
+    if secondary_image is None:
+        return
     
-    #layered_paint = LayeredPaintImage(img, Image.open(secondary))
-    #layered_paint.set_brush_sizes(200, 400, 800)
-    #painted_image, painted_secondary = layered_paint.paint()
-    #painted_image.show()
-    
-    #kuwahara_filter = Kuwahara(method='gaussian', radius=15, primary_image=img_2, secondary_image=img)
-    #kuwahara_filter.apply()
-    #img_2, img = kuwahara_filter.get_results()
+    secondary_input = Image.open("Inputs/" + secondary_image)
+    secondary_output = "Outputs/" + secondary_image
+    slic_secondary = SLICImage(secondary_input, ImageDraw.Draw(secondary_input))
+    slic_secondary.draw_splots(labels)
+    slic_secondary.image.save(secondary_output)
 
-    flow_direction = FlowDirection(img_2)
+def quick_layered_paint(image: str, secondary_image: str):
+    image_input = Image.open("Inputs/" + image)
+    image_output = "Outputs/" + image
+    secondary_input = None
+    if secondary_image is not None:
+        secondary_input = Image.open("Inputs/" + secondary_image)
+        secondary_output = "Outputs/" + secondary_image
+    
+    layered_paint = LayeredPaintImage(image_input, secondary_input)
+    layered_paint.set_brush_sizes(200, 400, 800)
+    painted_image, painted_secondary = layered_paint.paint()
+    painted_image.save(image_output)
+    if secondary_image is not None:
+        painted_secondary.save(secondary_output)
+
+def quick_kuwahara(image: str, secondary_image: str):
+    image_input = Image.open("Inputs/" + image)
+    secondary_input = None
+    if secondary_image is not None:
+        secondary_input = Image.open("Inputs/" + secondary_image)
+    image_output = "Outputs/" + image
+    secondary_output = "Outputs/" + secondary_image
+    kuwahara_filter = Kuwahara(method='gaussian', radius=15, primary_image=secondary_input, secondary_image=image_input)
+    kuwahara_filter.apply()
+    img, img_2 = kuwahara_filter.get_results()
+    img.save(image_output)
+    if secondary_image is not None: 
+        img_2.save(secondary_output)
+
+def flow_blur(image: str, secondary_image: str):
+    image_input = Image.open("Inputs/" + image)
+    secondary_input = Image.open("Inputs/" + secondary_image)
+    image_output = "Outputs/" + image
+    secondary_output = "Outputs/" + secondary_image
+    flow_direction = FlowDirection(secondary_input)
     flow_direction.compute_flow()
-    normals_image = flow_direction.compute_height_field()
-    #normals_image = flow_direction.compute_normals()
-    
+    blurred_image = flow_direction.blur_along_flow()
+    blurred_image.save(image_output)
 
-# img.save(outputname)
-# if img_2:
-#     img_2.save(secondary_outputname)
-if normals_image:
-    normals_image.save(tertiary_outputname)
+    img_2 = Image.open(secondary_input)
+    img_2.save(secondary_output)
+
+if __name__ == "__main__":
+    for i in [0, 1, 2]:
+        primary = normal_images[i]
+        secondary = albedo_images[i]
+        if primary is not None:
+            quick_slic(primary, secondary)
+            #quick_layered_paint(primary, secondary)
+            #quick_kuwahara(primary, secondary)
+        

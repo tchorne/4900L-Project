@@ -45,11 +45,9 @@ class FlowDirection:
         # flow_directions_image = Image.fromarray(flow_directions_image)
         # flow_directions_image.show()
 
-    def compute_height_field(self):
-        # Compute height field from flow directions
-        
-        luminance = self.lab_image[...,0]
-        H, W = luminance.shape
+    def blur_along_flow(self):
+        image = self.lab_image
+        H, W = image.shape[:2]
 
         tx = self.eigenvectors[..., 0, 0] # Tangent x
         ty = self.eigenvectors[..., 1, 0]
@@ -78,12 +76,12 @@ class FlowDirection:
                 x0 = np.clip(np.floor(x).astype(np.int32), 0, W - 1)
                 y0 = np.clip(np.floor(y).astype(np.int32), 0, H - 1)
 
-                out += w * luminance[y0, x0]
+                out += w * image[y0, x0, 0]
         out /= np.max(out)
 
-        self.height_field = out
-        height_image = (out * 255).astype(np.uint8)
-        return Image.fromarray(height_image)
+        #self.height_field = out
+        #height_image = (out * 255).astype(np.uint8)
+        return Image.fromarray(image)
 
     def compute_normals(self):
         # Compute normals from height field
