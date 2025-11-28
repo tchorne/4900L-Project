@@ -130,6 +130,8 @@ void ofApp::draw(){
 		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
 		lightingShader.setUniform1f("split", split);
 
+		lightingShader.setUniform2f("screenSize",(float)ofGetWidth(),(float)ofGetHeight());
+
 		lightingShader.setUniform1i("useAlbedo", true);
 		lightingShader.setUniformTexture("texA", earth, 0);
 		lightingShader.setUniformTexture("texB", earthNight, 1);
