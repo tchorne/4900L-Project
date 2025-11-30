@@ -67,7 +67,7 @@ def quick_kuwahara(image: str, secondary_image: str):
     secondary_output = "Outputs/" + secondary_image
     kuwahara_filter = Kuwahara(method='gaussian', radius=15, primary_image=secondary_input, secondary_image=image_input)
     kuwahara_filter.apply()
-    img, img_2 = kuwahara_filter.get_results()
+    img_2, img = kuwahara_filter.get_results()
     img.save(image_output)
     if secondary_image is not None: 
         img_2.save(secondary_output)
@@ -88,9 +88,9 @@ def flow_blur(image: str, secondary_image: str):
 if __name__ == "__main__":
     for i in [0,1,2,3]:
         primary = albedo_images[i]
-        secondary = albedo_images[i]
+        secondary = normal_images[i]
         if primary is not None:
             #quick_slic(primary, secondary)
-            quick_layered_paint(primary, secondary, 20, 40, 80)
-            #quick_kuwahara(primary, secondary)
+            #quick_layered_paint(primary, secondary, 20, 40, 80)
+            quick_kuwahara(primary, secondary)
         
