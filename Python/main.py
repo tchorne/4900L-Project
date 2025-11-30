@@ -72,25 +72,12 @@ def quick_kuwahara(image: str, secondary_image: str):
     if secondary_image is not None: 
         img_2.save(secondary_output)
 
-def flow_blur(image: str, secondary_image: str):
-    image_input = Image.open("Inputs/" + image)
-    secondary_input = Image.open("Inputs/" + secondary_image)
-    image_output = "Outputs/" + image
-    secondary_output = "Outputs/" + secondary_image
-    flow_direction = FlowDirection(secondary_input)
-    flow_direction.compute_flow()
-    blurred_image = flow_direction.blur_along_flow()
-    blurred_image.save(image_output)
-
-    img_2 = Image.open(secondary_input)
-    img_2.save(secondary_output)
-
 if __name__ == "__main__":
-    for i in [0,1,2,3]:
-        primary = albedo_images[i]
-        secondary = normal_images[i]
+    for i in [1]:
+        primary = normal_images[i]
+        secondary = albedo_images[i]
         if primary is not None:
             #quick_slic(primary, secondary)
-            #quick_layered_paint(primary, secondary, 20, 40, 80)
-            quick_kuwahara(primary, secondary)
+            quick_layered_paint(primary, secondary, 24, 40, 80)
+            #quick_kuwahara(primary, secondary)
         

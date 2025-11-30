@@ -39,7 +39,7 @@ class LayeredPaintImage:
         if self.secondary:
             secondary_canvas = self.secondary.copy()
         w, h = self.image.size 
-        threshold = 4000
+        threshold = 5
         num_directions = 16
         
         refresh = True
@@ -47,36 +47,42 @@ class LayeredPaintImage:
         initial_brush_size = self.brush_sizes[0]
         canvas.paste(self.image)
         canvas = canvas.filter(ImageFilter.GaussianBlur(radius=initial_brush_size * BLUR_FACTOR))
+        lab = rgb2lab(np.array(canvas).astype(np.float32))
 
         for brush_size in self.brush_sizes:
 
             blurred = self.image.copy().filter(ImageFilter.GaussianBlur(radius=brush_size * BLUR_FACTOR))
             blurred_array = np.array(blurred)
+            blurred_lab = rgb2lab(blurred_array.astype(np.float32))
 
-            grid = brush_size
             brush_mask = self.brush.get_bitmap_for_size(brush_size)
             rotated_brush_masks = self.brush.get_rotated_bitmaps(brush_size, 0, num_directions=num_directions)
 
             for y in range(0, h, brush_size):
                 for x in range(0, w, brush_size):
-                    M = blurred_array[y:y+grid, x:x+grid]
+                    M = blurred_array[y:y+brush_size, x:x+brush_size]
+                    M_lab = blurred_lab[y:y+brush_size, x:x+brush_size]
                     cropped_canvas = np.array(canvas.crop((x, y, x + brush_size, y + brush_size)))
+                    cropped_canvas_lab = lab[y:y+brush_size, x:x+brush_size]
                     # Ensure both arrays have the same shape
                     if cropped_canvas.shape != M.shape:
                         min_shape = tuple(map(min, cropped_canvas.shape, M.shape))
                         cropped_canvas = cropped_canvas[:min_shape[0], :min_shape[1], :min_shape[2]]
                         M = M[:min_shape[0], :min_shape[1], :min_shape[2]]
-                    difference_array = np.linalg.norm(cropped_canvas[..., :3] - M[..., :3], axis=2)
-                    summed_difference = np.sum(difference_array, axis=(0, 1))
+                        M_lab = M_lab[:cropped_canvas.shape[0], :cropped_canvas.shape[1], :cropped_canvas.shape[2]]
+                        cropped_canvas_lab = cropped_canvas_lab[:min_shape[0], :min_shape[1], :min_shape[2]]
+                    
+                    difference_array = np.linalg.norm(cropped_canvas_lab - M_lab, axis=2)
+                    average = np.average(difference_array, axis=(0, 1))
 
-                    if refresh or (summed_difference > threshold):
+                    if refresh or (average > threshold):
                         x1, y1 = np.unravel_index(np.argmax(difference_array), difference_array.shape)
                         
 
                         draw_color = tuple(M.mean(axis=(0, 1)).astype(int))
                         secondary_draw_color = None
                         if self.secondary:
-                            secondary_M = np.array(self.secondary.crop((x, y, x + grid, y + grid)))
+                            secondary_M = np.array(self.secondary.crop((x, y, x + brush_size, y + brush_size)))
                             secondary_draw_color = tuple(secondary_M.mean(axis=(0, 1)).astype(int))
                         
                         self.draw_brush_strokes(canvas, secondary_canvas, brush_size, w, h, x, y, x1, y1, draw_color, secondary_draw_color, brush_mask, rotated_brush_masks, num_directions)
@@ -135,3 +141,30 @@ class Brush:
             rotated = scaled_image.rotate(angle + i * (360 / num_directions), resample=Image.BILINEAR)
             bitmaps.append(rotated)
         return bitmaps
+
+def rgb2lab(rgb):
+    # Function written by chatGPT
+    # Converts from rgb color space to CIELAB (lightness, color a, color b) color space
+
+    # Very rough conversion, enough for SLIC demo
+    rgb = rgb / 255.0
+    mask = rgb > 0.04045
+    rgb[mask] = np.power((rgb[mask] + 0.055) / 1.055, 2.4)
+    rgb[~mask] /= 12.92
+    rgb *= 100
+
+    # sRGB D65 conversion
+    X = rgb[...,0]*0.4124 + rgb[...,1]*0.3576 + rgb[...,2]*0.1805
+    Y = rgb[...,0]*0.2126 + rgb[...,1]*0.7152 + rgb[...,2]*0.0722
+    Z = rgb[...,0]*0.0193 + rgb[...,1]*0.1192 + rgb[...,2]*0.9505
+
+    X /= 95.047; Y /= 100.0; Z /= 108.883
+    XYZ = np.stack([X,Y,Z], axis=-1)
+    mask = XYZ > 0.008856
+    XYZ[mask] = np.cbrt(XYZ[mask])
+    XYZ[~mask] = (7.787 * XYZ[~mask]) + (16/116)
+
+    L = (116 * XYZ[...,1]) - 16
+    a = 500 * (XYZ[...,0] - XYZ[...,1])
+    b = 200 * (XYZ[...,1] - XYZ[...,2])
+    return np.stack([L,a,b], axis=-1)
