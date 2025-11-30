@@ -20,6 +20,9 @@ void ofApp::setup(){
 	//load models
 	kitchenModel.loadModel("kitchen.obj");
 	chairModel.loadModel("chair.obj");
+	cowModel.loadModel("cowModel.obj");
+	bunnyModel.loadModel("bunnyModel.obj");
+	dragonModel.loadModel("dragonModel.obj");
 
 	//setting up the lighting position 
 	lightPos = glm::vec3(-500, 3000, 1000);
@@ -46,31 +49,49 @@ void ofApp::setup(){
 	chairModel.setRotation(0, 180, 0, 1, 0); // rotate 180° around Y
 	chairModel.setRotation(1, 180, 0, 0, 1); // then 180° around Z
 
+	//setting the position of the cow model to be centered in front of the camera
+	cowModel.setPosition(0, 0, 0);
+	cowModel.setScale(8.0, 8.0, 8.0);
+	cowModel.setRotation(0, 180, 0, 1, 0); // rotate 180° around Y
+	cowModel.setRotation(1, 180, 0, 0, 1); // then 180° around Z
+
+	//setting the position of the bunny model to be centered in front of the camera
+	bunnyModel.setPosition(0, 0, 0);
+	bunnyModel.setScale(8.0, 8.0, 8.0);
+	bunnyModel.setRotation(0, 180, 0, 1, 0); // rotate 180° around Y
+	bunnyModel.setRotation(1, 180, 0, 0, 1); // then 180° around Z
+
+	//setting the position of the bunny model to be centered in front of the camera
+	dragonModel.setPosition(0, 0, 0);
+	dragonModel.setScale(8.0, 8.0, 8.0);
+	dragonModel.setRotation(0, 180, 0, 1, 0); // rotate 180° around Y
+	dragonModel.setRotation(1, 180, 0, 0, 1); // then 180° around Z
+
 	//temp object to display a cylinder at light position for tracking
 	cylLighting.setResolution(10, 16, 2);
 	cylLighting.setHeight(200);
 
 	//earth texture
 	ofDisableArbTex();
-	//ofLoadImage(earth, "1_earth_8k.jpg");
-	bool ok = ofLoadImage(earth, "1_earth_8k.jpg");
+	ofLoadImage(earth, "1_earth_8k.jpg");
+	ofLoadImage(earthTexturePainted, "earth_albedo_painted.png");
 
+	//load cow texture
+	ofLoadImage(cowTexture, "cow_albedo.png");
+	ofLoadImage(cowTexturePainted, "cow_albedo_painted.png");
 
+	//load bunny texture
+	ofLoadImage(bunnyTexture, "bunny_albedo.png");
+	ofLoadImage(bunnyTexturePainted, "bunny_albedo_painted.png");
 
-	if (!ok) {
-		ofLogError() << "Failed to load earth texture!";
-	}
-	else {
-		ofLogNotice() << "Loaded earth texture: "
-			<< earth.getWidth() << "x" << earth.getHeight();
-	}
-
-	//sphereEarth.mapTexCoordsFromTexture(earth);
-	ofLoadImage(earthNight, "earthlights1k.jpg");
+	//load dragon texture
+	ofLoadImage(dragonTexture, "dragon_albedo.png");
+	ofLoadImage(dragonTexturePainted, "dragon_albedo_painted.png");
 
 
 	sphereEarth.setPosition(0, 0, 0);
 	sphereEarth.set(2000, 16);
+
 }
 
 //--------------------------------------------------------------
@@ -93,7 +114,7 @@ void ofApp::draw(){
 	lightingShader.setUniform3f("viewPos", cam.getPosition());
 
 	lightingShader.setUniform3f("lightPos", lightPos);
-	lightingShader.setUniform3f("lightColor", glm::vec3(1, 1, 1));
+	lightingShader.setUniform3f("lightColor", glm::vec3(3, 3, 3));
 	lightingShader.setUniform3f("objectColor", glm::vec3(0.6, 0.6, 0.9));
 	
 	
@@ -119,11 +140,64 @@ void ofApp::draw(){
 		chairModel.disableMaterials();
 		chairModel.drawFaces();
 	}
-	else {
+	//else if current model is cow
+	else if (currentModel == 3) {
+		lightingShader.setUniformMatrix4f("worldMatrix", cowModel.getModelMatrix());
 		
+		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
+		lightingShader.setUniform1f("split", split);
+
+		lightingShader.setUniform2f("screenSize", (float)ofGetWidth(), (float)ofGetHeight());
+
+		lightingShader.setUniform1i("useAlbedo", true);
+		lightingShader.setUniformTexture("texA", cowTexture, 0);
+		lightingShader.setUniformTexture("texB", cowTexturePainted, 1);
+
+		cowModel.disableMaterials();
+
+
+		cowModel.drawFaces();
+	}
+	//else if current model is bunny
+	else if (currentModel == 4) {
+		lightingShader.setUniformMatrix4f("worldMatrix", bunnyModel.getModelMatrix());
+
+		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
+		lightingShader.setUniform1f("split", split);
+
+		lightingShader.setUniform2f("screenSize", (float)ofGetWidth(), (float)ofGetHeight());
+
+		lightingShader.setUniform1i("useAlbedo", true);
+		lightingShader.setUniformTexture("texA", bunnyTexture, 0);
+		lightingShader.setUniformTexture("texB", bunnyTexturePainted, 1);
+
+		bunnyModel.disableMaterials();
+
+
+		bunnyModel.drawFaces();
+	}
+	//else if current model is dragon
+	else if (currentModel == 5) {
+		lightingShader.setUniformMatrix4f("worldMatrix", dragonModel.getModelMatrix());
+
+		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
+		lightingShader.setUniform1f("split", split);
+
+		lightingShader.setUniform2f("screenSize", (float)ofGetWidth(), (float)ofGetHeight());
+
+		lightingShader.setUniform1i("useAlbedo", true);
+		lightingShader.setUniformTexture("texA", dragonTexture, 0);
+		lightingShader.setUniformTexture("texB", dragonTexturePainted, 1);
+
+		dragonModel.disableMaterials();
+
+
+		dragonModel.drawFaces();
+	}
+	else {
+		//if no model selected, draw the earth sphere
 		lightingShader.setUniformMatrix4f("worldMatrix", sphereEarth.getGlobalTransformMatrix());
 
-		//earth.bind();
 		sphereEarth.rotate(0.1, 0, 1, 0);
 
 		//take mouse X position and split between two textures
@@ -134,9 +208,8 @@ void ofApp::draw(){
 
 		lightingShader.setUniform1i("useAlbedo", true);
 		lightingShader.setUniformTexture("texA", earth, 0);
-		lightingShader.setUniformTexture("texB", earthNight, 1);
+		lightingShader.setUniformTexture("texB", earthTexturePainted, 1);
 		sphereEarth.draw();
-		//earth.unbind();
 	}
 
 	lightingShader.end();
@@ -161,6 +234,14 @@ void ofApp::keyPressed(int key){
 	}
 	else if (key == '3') {
 		currentModel = 3;
+	}else if (key == '4') {
+		currentModel = 4;
+	}
+	else if (key == '5') {
+		currentModel = 5;
+	}
+	else {
+		currentModel = 0;
 	}
 }
 

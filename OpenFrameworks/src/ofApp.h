@@ -43,6 +43,25 @@ class ofApp : public ofBaseApp{
 
 		//earth demo
 		ofTexture earth;
-		ofTexture earthNight;
+		ofTexture earthTexturePainted;
 		ofSpherePrimitive sphereEarth;
+
+		//cow demo
+		ofTexture cowTexture;
+		ofTexture cowTexturePainted;
+		ofxAssimpModelLoader cowModel;
+
+		//bunny demo
+		ofTexture bunnyTexture;
+		ofTexture bunnyTexturePainted;
+		ofxAssimpModelLoader bunnyModel;
+
+		//dragon demo
+		ofTexture dragonTexture;
+		ofTexture dragonTexturePainted;
+		ofxAssimpModelLoader dragonModel;
+
+
+
+
 };
