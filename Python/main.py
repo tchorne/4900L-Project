@@ -29,7 +29,7 @@ def quick_slic(image: str, secondary_image: str):
     image_output = "Outputs/" + image
 
     slic_image = SLICImage(image_input, ImageDraw.Draw(image_input))
-    labels, centers = slic_image.slic(superpixel_ratio=36, num_iterations=10, compactness=13)
+    labels, centers = slic_image.slic(superpixel_size=32, num_iterations=10, compactness=13)
     slic_image.draw_splots(labels)
     slic_image.image.save(image_output)
 
@@ -42,7 +42,7 @@ def quick_slic(image: str, secondary_image: str):
     slic_secondary.draw_splots(labels)
     slic_secondary.image.save(secondary_output)
 
-def quick_layered_paint(image: str, secondary_image: str):
+def quick_layered_paint(image: str, secondary_image: str, *brush_sizes):
     image_input = Image.open("Inputs/" + image)
     image_output = "Outputs/" + image
     secondary_input = None
@@ -51,7 +51,8 @@ def quick_layered_paint(image: str, secondary_image: str):
         secondary_output = "Outputs/" + secondary_image
     
     layered_paint = LayeredPaintImage(image_input, secondary_input)
-    layered_paint.set_brush_sizes(200, 400, 800)
+    layered_paint.set_flow_map()
+    layered_paint.set_brush_sizes(*brush_sizes)
     painted_image, painted_secondary = layered_paint.paint()
     painted_image.save(image_output)
     if secondary_image is not None:
@@ -85,11 +86,11 @@ def flow_blur(image: str, secondary_image: str):
     img_2.save(secondary_output)
 
 if __name__ == "__main__":
-    for i in [0, 1, 2]:
-        primary = normal_images[i]
+    for i in [0,1,2,3]:
+        primary = albedo_images[i]
         secondary = albedo_images[i]
         if primary is not None:
-            quick_slic(primary, secondary)
-            #quick_layered_paint(primary, secondary)
+            #quick_slic(primary, secondary)
+            quick_layered_paint(primary, secondary, 20, 40, 80)
             #quick_kuwahara(primary, secondary)
         

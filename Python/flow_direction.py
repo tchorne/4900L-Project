@@ -12,6 +12,7 @@ class FlowDirection:
     def __init__(self, image: Image.Image) -> None:
         self.image = image
         self.lab_image = rgb2lab(np.array(self.image).astype(np.float32))
+        self.angles = None
     
     def compute_flow(self):
         
@@ -38,7 +39,6 @@ class FlowDirection:
 
         self.eigenvalues, self.eigenvectors = np.linalg.eigh(J)
 
-        #theta = 0.5 * np.arctan2(2 * Jxy, Jxx - Jyy)
         # Preview flow direction as image 
         # edge_weight = self.eigenvectors[:, :, 0, 1]
         # flow_directions_image = (edge_weight / np.max(edge_weight) * 255).astype(np.uint8)

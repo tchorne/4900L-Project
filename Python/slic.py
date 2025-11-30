@@ -23,12 +23,9 @@ class SLICImage:
         self.draw = draw
         self.num_pixels = image.size[0] * image.size[1]
 
-    def slic(self, superpixel_ratio=100, num_iterations=10, compactness=10):
-        num_superpixels = self.num_pixels / superpixel_ratio
+    def slic(self, superpixel_size=100, num_iterations=10, compactness=10):
         w, h = self.image.size
         lab = rgb2lab(np.array(self.image).astype(np.float32))
-
-        superpixel_size = self.num_pixels / num_superpixels
 
         S = int(superpixel_size)
         grid_interval = int(math.sqrt(superpixel_size))
