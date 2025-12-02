@@ -8,7 +8,8 @@ import numpy as np
 from typing import List, Tuple, NamedTuple
 from functools import lru_cache
 from flow_direction import FlowDirection
-
+import os
+ 
 BLUR_FACTOR = 0.5
 NUM_PASTES_PER_STROKE = 8
 
@@ -23,7 +24,11 @@ class LayeredPaintImage:
         self.secondary = secondary
         self.pixels = image.load()
         self.num_pixels = image.size[0] * image.size[1]
-        self.brush = Brush(Image.open("Brushes/rough2.png"))
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        brush_path = os.path.join(script_dir, "Brushes", "rough2.png")
+        if not os.path.exists(brush_path):
+            raise FileNotFoundError(f"Brush not found: {brush_path}")
+        self.brush = Brush(Image.open(brush_path))
         self.flow_angles = None
 
     def set_flow_map(self):
