@@ -1,6 +1,7 @@
 import bpy
 import os
 import math
+import time
 
 blend_dir = os.path.dirname(bpy.data.filepath)
 project_dir = os.path.dirname(blend_dir)
@@ -35,6 +36,7 @@ def load_image(path):
     img = bpy.data.images.get(filename)
     if not img:
         img = bpy.data.images.load(path)
+    print(f"Loaded image: {path}")
     return img
 
 def ensure_material(obj, filt):
@@ -62,16 +64,19 @@ def ensure_material(obj, filt):
     img = None
 
     if filt == "Default":
-        img = load_image(os.path.join(inputs_dir, base_albedo))
+        img_path = os.path.join(inputs_dir, base_albedo)
+        img = load_image(img_path)
     else:
         name, ext = os.path.splitext(base_albedo)
         filtered_path = os.path.join(outputs_dir, f"{name}_{filt}.png")
         img = load_image(filtered_path)
         if not img:
-            img = load_image(os.path.join(inputs_dir, base_albedo))
+            img_path = os.path.join(inputs_dir, base_albedo)
+            img = load_image(img_path)
 
     if img:
         tex_node.image = img
+        print(f"Applied BaseColor for {obj.name}: {img.filepath}")
 
     if not bsdf_node.inputs["Base Color"].is_linked:
         try:
@@ -113,6 +118,8 @@ def apply_normal_map(obj, normal_base_name, filt):
     tex_node.image = normal_img
     tex_node.image.colorspace_settings.name = "Non-Color"
 
+    print(f"Applied NormalMap for {obj.name}: {normal_img.filepath}")
+
     for l in list(links):
         if l.to_node == bsdf_node and l.to_socket.name == "Normal":
             try:
@@ -152,18 +159,22 @@ def rotate_object_constant(obj, start_frame, end_frame, axis="Z"):
                 kp.interpolation = 'LINEAR'
 
 def render_png(output_path):
+    start = time.time()
     bpy.context.scene.render.image_settings.file_format = 'PNG'
     bpy.context.scene.render.filepath = output_path
     bpy.context.scene.frame_set(bpy.context.scene.frame_start)
     bpy.ops.render.render(write_still=True)
-    print(f"PNG saved: {output_path}")
+    elapsed = time.time() - start
+    print(f"PNG saved: {output_path} (Time: {elapsed:.2f}s)")
 
 def render_mp4(output_path):
+    start = time.time()
     bpy.context.scene.render.image_settings.file_format = 'FFMPEG'
     bpy.context.scene.render.ffmpeg.format = 'MPEG4'
     bpy.context.scene.render.filepath = output_path
     bpy.ops.render.render(animation=True)
-    print(f"MP4 saved: {output_path}")
+    elapsed = time.time() - start
+    print(f"MP4 saved: {output_path} (Time: {elapsed:.2f}s)")
 
 frame_start = 1
 frame_end = 120

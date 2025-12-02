@@ -89,8 +89,8 @@ def quick_kuwahara(image: str, secondary_image: str):
 
 if __name__ == "__main__":
     for i in range(len(normal_images)):
-        primary = normal_images[i]
-        secondary = albedo_images[i]
+        secondary = normal_images[i]
+        primary = albedo_images[i]
         
         print(f"\nProcessing pair {i + 1}/{len(normal_images)}: {primary} + {secondary}")
         
