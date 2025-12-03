@@ -6,6 +6,9 @@ Thomas Horne, 101256754 \
 Vincent Vogl, 101141514 \
 Mohammad Danial Abbas, 101269146
 
+![Cover Image](Cover.png)
+"Stanford Dragon PBR" (https://skfb.ly/otyzN) by hackmans is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).
+
 # How to run
 
 Clone the repository
