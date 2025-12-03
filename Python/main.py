@@ -38,9 +38,9 @@ def output_path(filename, suffix=None):
 def quick_slic(image: str, secondary_image: str):
     image_input = Image.open(input_path(image))
     slic_image = SLICImage(image_input, ImageDraw.Draw(image_input))
+    start = time.time()
     labels, centers = slic_image.slic(superpixel_size=32, num_iterations=10, compactness=13)
     slic_image.draw_splots(labels)
-    slic_image.image.save(output_path(image, "SLIC"))
     
     if secondary_image is None:
         return
@@ -48,6 +48,9 @@ def quick_slic(image: str, secondary_image: str):
     secondary_input = Image.open(input_path(secondary_image))
     slic_secondary = SLICImage(secondary_input, ImageDraw.Draw(secondary_input))
     slic_secondary.draw_splots(labels)
+    end = time.time()
+    print(f"SLIC filter for {image} took {end - start:.2f} seconds")
+    slic_image.image.save(output_path(image, "SLIC"))
     slic_secondary.image.save(output_path(secondary_image, "SLIC"))
 
 def quick_layered_paint(image: str, secondary_image: str, *brush_sizes):
@@ -75,11 +78,11 @@ def quick_kuwahara(image: str, secondary_image: str):
     if secondary_image is not None:
         secondary_input = Image.open(input_path(secondary_image))
     
-    kuwahara_filter = Kuwahara(method='gaussian', radius=15, primary_image=secondary_input, secondary_image=image_input)
+    kuwahara_filter = Kuwahara(method='gaussian', radius=15, primary_image=image_input, secondary_image=secondary_input)
     
     start = time.time()
     kuwahara_filter.apply()
-    img_2, img = kuwahara_filter.get_results()
+    img, img_2 = kuwahara_filter.get_results()
     end = time.time()
     print(f" Kuwahara filter for {image} took {end - start:.2f} seconds")
     
@@ -89,13 +92,13 @@ def quick_kuwahara(image: str, secondary_image: str):
 
 if __name__ == "__main__":
     for i in range(len(normal_images)):
-        secondary = normal_images[i]
-        primary = albedo_images[i]
+        primary = normal_images[i]
+        secondary = albedo_images[i]
         
         print(f"\nProcessing pair {i + 1}/{len(normal_images)}: {primary} + {secondary}")
         
         quick_slic(primary, secondary)
-        quick_layered_paint(primary, secondary, 46, 40, 80)
+        quick_layered_paint(primary, secondary, 6, 40, 80)
         quick_kuwahara(primary, secondary)
         
         print(f"Saved outputs for {primary} + {secondary} to {outputs_dir}")
