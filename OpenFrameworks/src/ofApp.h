@@ -44,6 +44,8 @@ class ofApp : public ofBaseApp{
 		//earth demo
 		ofTexture earth;
 		ofTexture earthTexturePainted;
+		ofTexture earthNormals;
+		ofTexture earthNormalsPainted;
 		ofSpherePrimitive sphereEarth;
 
 		//cow demo
@@ -59,6 +61,8 @@ class ofApp : public ofBaseApp{
 		//dragon demo
 		ofTexture dragonTexture;
 		ofTexture dragonTexturePainted;
+		ofTexture dragonNormals;
+		ofTexture dragonNormalsPainted;
 		ofxAssimpModelLoader dragonModel;
 
 

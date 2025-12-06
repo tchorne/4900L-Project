@@ -18,10 +18,10 @@ void ofApp::setup(){
 	}
 
 	//load models
-	kitchenModel.loadModel("kitchen.obj");
-	chairModel.loadModel("chair.obj");
-	cowModel.loadModel("cowModel.obj");
-	bunnyModel.loadModel("bunnyModel.obj");
+	//kitchenModel.loadModel("kitchen.obj");
+	//chairModel.loadModel("chair.obj");
+	//cowModel.loadModel("cowModel.obj");
+	//loadModel("bunnyModel.obj");
 	dragonModel.loadModel("dragonModel.obj");
 
 	//setting up the lighting position 
@@ -73,21 +73,26 @@ void ofApp::setup(){
 
 	//earth texture
 	ofDisableArbTex();
-	ofLoadImage(earth, "1_earth_8k.jpg");
+	ofLoadImage(earth, "earth_albedo.jpg");
 	ofLoadImage(earthTexturePainted, "earth_albedo_painted.png");
+	//earth normals
+	ofLoadImage(earthNormals, "earth_normals.png");
+	ofLoadImage(earthNormalsPainted, "earth_normals_SLIC.png");
 
 	//load cow texture
-	ofLoadImage(cowTexture, "cow_albedo.png");
-	ofLoadImage(cowTexturePainted, "cow_albedo_painted.png");
+	//ofLoadImage(cowTexture, "cow_albedo.png");
+	//ofLoadImage(cowTexturePainted, "cow_albedo_painted.png");
 
 	//load bunny texture
-	ofLoadImage(bunnyTexture, "bunny_albedo.png");
-	ofLoadImage(bunnyTexturePainted, "bunny_albedo_painted.png");
+	//ofLoadImage(bunnyTexture, "bunny_albedo.png");
+	//ofLoadImage(bunnyTexturePainted, "bunny_albedo_painted.png");
 
 	//load dragon texture
 	ofLoadImage(dragonTexture, "dragon_albedo.png");
 	ofLoadImage(dragonTexturePainted, "dragon_albedo_painted.png");
-
+	//dragon normals
+	ofLoadImage(dragonNormals, "dragon_normals.png");
+	ofLoadImage(dragonNormalsPainted, "dragon_normals_SLIC.png");
 
 	sphereEarth.setPosition(0, 0, 0);
 	sphereEarth.set(2000, 16);
@@ -120,64 +125,16 @@ void ofApp::draw(){
 	
 	//to display temp lighting cylinder
 	lightingShader.setUniformMatrix4f("worldMatrix", cylLighting.getGlobalTransformMatrix());
-	cylLighting.setPosition(lightPos);
-	cylLighting.draw();
+	
+	//draws a cylinder at light position
+	//cylLighting.setPosition(lightPos);
+	//cylLighting.setPosition(lightPos.x, lightPos.y +mouseY, lightPos.z);
+	//cylLighting.draw();
 
 	//if current model is kitchen
-	if (currentModel == 1) {
-		lightingShader.setUniformMatrix4f("worldMatrix", kitchenModel.getModelMatrix());
-		lightingShader.setUniform1i("useAlbedo", false);
-		//custom lighting only works if materials are disabled
-		kitchenModel.disableMaterials();
-		kitchenModel.drawFaces();
-
-	}
-	//else if current model is chair
-	else if (currentModel ==2){
-		lightingShader.setUniformMatrix4f("worldMatrix", chairModel.getModelMatrix());
-		lightingShader.setUniform1i("useAlbedo", false);
-		//custom lighting only works if materials are disabled
-		chairModel.disableMaterials();
-		chairModel.drawFaces();
-	}
-	//else if current model is cow
-	else if (currentModel == 3) {
-		lightingShader.setUniformMatrix4f("worldMatrix", cowModel.getModelMatrix());
-		
-		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
-		lightingShader.setUniform1f("split", split);
-
-		lightingShader.setUniform2f("screenSize", (float)ofGetWidth(), (float)ofGetHeight());
-
-		lightingShader.setUniform1i("useAlbedo", true);
-		lightingShader.setUniformTexture("texA", cowTexture, 0);
-		lightingShader.setUniformTexture("texB", cowTexturePainted, 1);
-
-		cowModel.disableMaterials();
-
-
-		cowModel.drawFaces();
-	}
-	//else if current model is bunny
-	else if (currentModel == 4) {
-		lightingShader.setUniformMatrix4f("worldMatrix", bunnyModel.getModelMatrix());
-
-		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
-		lightingShader.setUniform1f("split", split);
-
-		lightingShader.setUniform2f("screenSize", (float)ofGetWidth(), (float)ofGetHeight());
-
-		lightingShader.setUniform1i("useAlbedo", true);
-		lightingShader.setUniformTexture("texA", bunnyTexture, 0);
-		lightingShader.setUniformTexture("texB", bunnyTexturePainted, 1);
-
-		bunnyModel.disableMaterials();
-
-
-		bunnyModel.drawFaces();
-	}
+	
 	//else if current model is dragon
-	else if (currentModel == 5) {
+	if (currentModel == 1) {
 		lightingShader.setUniformMatrix4f("worldMatrix", dragonModel.getModelMatrix());
 
 		float split = ofMap(mouseX, 0, ofGetWidth(), 0.0f, 1.0f, true);
@@ -188,6 +145,9 @@ void ofApp::draw(){
 		lightingShader.setUniform1i("useAlbedo", true);
 		lightingShader.setUniformTexture("texA", dragonTexture, 0);
 		lightingShader.setUniformTexture("texB", dragonTexturePainted, 1);
+		lightingShader.setUniform1i("useNormalMap", 1);
+		lightingShader.setUniformTexture("normalMapA", dragonNormals, 2);
+		lightingShader.setUniformTexture("normalMapB", dragonNormalsPainted, 3);
 
 		dragonModel.disableMaterials();
 
@@ -209,6 +169,9 @@ void ofApp::draw(){
 		lightingShader.setUniform1i("useAlbedo", true);
 		lightingShader.setUniformTexture("texA", earth, 0);
 		lightingShader.setUniformTexture("texB", earthTexturePainted, 1);
+		lightingShader.setUniform1i("useNormalMap", 1);
+		lightingShader.setUniformTexture("normalMapA", earthNormals, 2);
+		lightingShader.setUniformTexture("normalMapB", earthNormalsPainted, 3);
 		sphereEarth.draw();
 	}
 
@@ -228,18 +191,7 @@ void ofApp::keyPressed(int key){
 	if (key == '1') {
 		currentModel = 1;
 	}
-	//for chair model
-	else if (key == '2') {
-		currentModel = 2;
-	}
-	else if (key == '3') {
-		currentModel = 3;
-	}else if (key == '4') {
-		currentModel = 4;
-	}
-	else if (key == '5') {
-		currentModel = 5;
-	}
+	//else earth model
 	else {
 		currentModel = 0;
 	}
